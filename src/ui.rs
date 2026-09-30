@@ -148,7 +148,8 @@ fn draw_panel(f: &mut Frame, app: &App, area: Rect) {
 fn draw_footer(f: &mut Frame, app: &App, area: Rect) {
     let key = |k: &'static str| Span::raw(k).fg(FOCUS);
     let hints = Line::from(vec![
-        key("hjkl/tab"), Span::raw(" focus  "),
+        key("hjkl"), Span::raw(" focus  "),
+        key("tab"), Span::raw(" next output (incl. off)  "),
         key("HJKL"), Span::raw(" move  "),
         key("space"), Span::raw(" on/off  "),
         key("p"), Span::raw(" primary  "),
