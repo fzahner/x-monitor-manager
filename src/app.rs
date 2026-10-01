@@ -2,7 +2,7 @@
 
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use ratatui::DefaultTerminal;
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 
@@ -125,6 +125,10 @@ impl App {
                 Some(prev) => self.layout = prev,
                 None => self.error("nothing to undo"),
             },
+            KeyCode::Char('e') => match self.reload() {
+                Ok(()) => self.info("reloaded from xrandr; staged edits discarded"),
+                Err(e) => self.error(format!("reload failed: {e:#}")),
+            },
             KeyCode::Enter => self.apply(),
             _ => {}
         }
@@ -203,17 +207,28 @@ impl App {
     fn keep(&mut self) {
         self.phase = Phase::Editing;
         // Re-read so the editor reflects exactly what X ended up with.
-        match xrandr::query() {
-            Ok(outputs) => {
-                let focused = self.layout.monitors[self.focus].name.clone();
-                self.layout = Layout::from_outputs(&outputs);
-                self.focus = self.layout.index_of(&focused).unwrap_or(0);
-                self.undo.clear();
-            }
-            Err(e) => return self.error(format!("kept, but re-reading state failed: {e:#}")),
+        match self.reload() {
+            Ok(()) => self.info("configuration kept"),
+            Err(e) => self.error(format!("kept, but re-reading state failed: {e:#}")),
         }
-        self.applied = self.layout.clone();
-        self.info("configuration kept");
+    }
+
+    /// Replaces the staged layout with what xrandr currently reports,
+    /// keeping focus on the same output if it still exists.
+    fn reload(&mut self) -> Result<()> {
+        let layout = Layout::from_outputs(&xrandr::query()?);
+        if layout.monitors.is_empty() {
+            bail!("xrandr reports no connected outputs");
+        }
+        let focused = &self.layout.monitors[self.focus].name;
+        self.focus = layout
+            .index_of(focused)
+            .or_else(|| layout.monitors.iter().position(|m| m.primary))
+            .unwrap_or(0);
+        self.applied = layout.clone();
+        self.layout = layout;
+        self.undo.clear();
+        Ok(())
     }
 
     fn revert(&mut self) {

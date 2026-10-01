@@ -154,6 +154,7 @@ fn draw_footer(f: &mut Frame, app: &App, area: Rect) {
         key("space"), Span::raw(" on/off  "),
         key("p"), Span::raw(" primary  "),
         key("u"), Span::raw(" undo  "),
+        key("e"), Span::raw(" reload  "),
         key("enter"), Span::raw(" apply  "),
         key("q"), Span::raw(" quit"),
     ]);
