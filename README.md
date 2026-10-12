@@ -24,6 +24,13 @@ A TUI interface for the `xrandr` CLI with vim-like controls.
 
 ## Installing
 
+### Install with cargo
+
+```sh
+# (cargo bin folder needs to be added to path)
+cargo install x-monitor-manager
+```
+
 ### Build from source
 
 ```sh
@@ -33,6 +40,8 @@ cd x-monitor-manager
 # 2. Build to project and copy it to your PATH
 cargo build --release
 sudo cp target/release/xmm /usr/local/bin/
-# 2. OR install it via rust directly (cargo bin folder needs to be added to path)
+# 2. OR install it via cargo directly (cargo bin folder needs to be added to path)
 cargo install --path .
+# 3. Run it
+xmm
 ```
